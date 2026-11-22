@@ -1,0 +1,45 @@
+name: Build and Deploy Home-API
+
+on:
+  push:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+env:
+  CONTAINER_NAME: computer-monitor-bot
+  IMAGE_NAME: computer-monitor-bot
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check Docker access
+        run: |
+          docker version
+          docker ps
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            -t ${IMAGE_NAME}:${{ gitea.sha }} \
+            -t ${IMAGE_NAME}:latest \
+            .
+
+      - name: Deploy container on Unraid
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          API_URL: ${{ secrets.API_URL }}
+          API_KEY: ${{ secrets.API_KEY }}
+          CHECK_INTERVAL: ${{ secrets.CHECK_INTERVAL }}
+          CHAT_ID: ${{ secrets.CHAT_ID }}
+          AUTHORIZED_USER_ID: ${{ secrets.AUTHORIZED_USER_ID }}
+          COMPUTERS: ${{ vars.COMPUTERS }}
+        run: |
+          chmod +x ./deploy/deploy-unraid.sh
+          ./deploy/deploy-unraid.sh

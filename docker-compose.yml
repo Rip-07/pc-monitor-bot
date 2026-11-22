@@ -1,0 +1,9 @@
+services:
+  computer-monitor-bot:
+    build: .
+    container_name: computer-monitor-bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - PYTHONUNBUFFERED=1
